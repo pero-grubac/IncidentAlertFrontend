@@ -1,0 +1,77 @@
+* {
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Sakrijte scroll barove na `body` ako ne želite da se prikazuju */
+}
+.container {
+  display: flex;
+}
+main {
+  width: 100%;
+  padding: 0px;
+}
+.sidebar {
+  background: #f0f0f0; /* Svetlija boja za sidebar */
+  color: #333;
+  height: 100vh;
+  width: 400px;
+  transition: width 0.5s;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.top_section {
+  display: flex;
+  align-items: center;
+  padding: 20px 15px;
+}
+.logo {
+  font-size: 24px;
+  white-space: nowrap; /* Sprečava prelazak teksta u novi red */
+  overflow: hidden; /* Sakriva deo teksta koji ne staje u prikazanu širinu */
+  text-overflow: ellipsis; /* Dodaje tri tačke na kraju ako tekst prelazi širinu */
+  flex-grow: 1;
+  margin-right: 10px;
+}
+.bars {
+  display: flex;
+  font-size: 25px;
+  margin-left: 50px;
+}
+.link {
+  display: flex;
+  color: #333;
+  padding: 10px 15px;
+  gap: 15px;
+  transition: all 0.5s;
+}
+.link:hover {
+  background: #ddd;
+  color: #000;
+  transition: all 0.5s;
+}
+.active {
+  background: #ddd;
+  color: #000;
+}
+.icon,
+.link_text {
+  font-size: 20px;
+}
+.searchBox .MuiTextField-root {
+  width: 100%;
+  background: #fff; /* Pozadina pretraživača */
+}
+
+.searchBox .MuiInputBase-root {
+  color: #333; /* Boja teksta unutar pretraživača */
+}
+
+.searchBox .MuiIconButton-root {
+  color: #333; /* Boja ikone unutar pretraživača */
+}

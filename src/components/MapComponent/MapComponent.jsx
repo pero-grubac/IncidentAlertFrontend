@@ -43,13 +43,19 @@ const geocodeLatLng = async (lat, lng) => {
 const MapComponent = () => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const { searchTerm } = useSearch();
+  const [map, setMap] = useState(/** @type google.maps.Map */ (null));
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAP_API_KEY,
   });
+
   useEffect(() => {
     console.log(searchTerm);
-  });
+    if (!searchTerm) {
+      map && map.panTo(initialCenter);
+    }
+  }, [searchTerm, map]);
+
   if (!isLoaded) {
     return (
       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -80,7 +86,7 @@ const MapComponent = () => {
       <Box sx={{ flex: 1 }}>
         <GoogleMap
           mapContainerStyle={containerStyle}
-          center={initialCenter}
+          center={markerPosition || initialCenter}
           zoom={10}
           onClick={handleMapClick}
           options={{
@@ -89,8 +95,11 @@ const MapComponent = () => {
             mapTypeControl: false,
             fullscreenControl: false,
           }}
+          onLoad={(map) => setMap(map)}
         >
-          {markerPosition && <Marker position={markerPosition} />}
+          {markerPosition && (
+            <Marker position={markerPosition} />
+          )}
         </GoogleMap>
       </Box>
     </Box>

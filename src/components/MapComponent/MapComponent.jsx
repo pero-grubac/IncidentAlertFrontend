@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { Box, CircularProgress } from "@mui/material";
 import { useSearch } from "../../context/SearchContext";
+import { useNavigate } from "react-router-dom";
 
 const containerStyle = {
   width: "100%",
@@ -29,7 +30,6 @@ const geocodeLatLng = async (lat, lng) => {
     });
 
     if (results && results.length > 0) {
-      // Return the formatted address of the first result
       return results[0].formatted_address;
     } else {
       return "No address found";
@@ -40,29 +40,85 @@ const geocodeLatLng = async (lat, lng) => {
   }
 };
 
+const geocodeAddress = async (address) => {
+  const geocoder = new window.google.maps.Geocoder();
+
+  try {
+    const results = await new Promise((resolve, reject) => {
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === window.google.maps.GeocoderStatus.OK) {
+          resolve(results);
+        } else {
+          reject(status);
+        }
+      });
+    });
+
+    if (results && results.length > 0) {
+      const { lat, lng } = results[0].geometry.location;
+      return { lat: lat(), lng: lng() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    return null;
+  }
+};
+
 const MapComponent = () => {
   const [markerPosition, setMarkerPosition] = useState(null);
-  const { searchTerm } = useSearch();
-  const [map, setMap] = useState(/** @type google.maps.Map */ (null));
-
+  const { searchTerm, setSearchTerm } = useSearch();
+  const navigate = useNavigate();
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAP_API_KEY,
+    libraries: ["places"],
   });
 
   useEffect(() => {
-    console.log(searchTerm);
-    if (!searchTerm) {
-      map && map.panTo(initialCenter);
+    if (searchTerm) {
+      const geocodeAndPlaceMarker = async () => {
+        const location = await geocodeAddress(searchTerm);
+        if (location) {
+          setMarkerPosition(location);
+        }
+      };
+      geocodeAndPlaceMarker();
     }
-  }, [searchTerm, map]);
+  }, [searchTerm]);
 
+  // Display loading spinner while Google Maps is not loaded
   if (!isLoaded) {
     return (
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Set full screen height
+        }}
+      >
         <CircularProgress />
-      </div>
+      </Box>
     );
   }
+
+  const extractLocationName = (locationName) => {
+    const parts = locationName.split(" ");
+    if (parts.length > 1) {
+      const locationWithoutComma = parts[1].replace(",", ""); // Uklanjanje zareza
+      return locationWithoutComma || parts[2].replace(",", "");
+    }
+    return locationName.replace(",", ""); // Ukloni zarez ako postoji u jednoj reči
+  };
+
+  const handleMarkerDblClick = () => {
+    if (markerPosition) {
+      let locationName = searchTerm || "unknown-location";
+      locationName = extractLocationName(locationName);
+      navigate(`/location/${locationName}`);
+    }
+  };
 
   const handleMapClick = async (event) => {
     const clickedLat = event.latLng.lat();
@@ -79,6 +135,8 @@ const MapComponent = () => {
       lng: clickedLng,
       name: locationName,
     });
+
+    setSearchTerm(locationName);
   };
 
   return (
@@ -95,10 +153,9 @@ const MapComponent = () => {
             mapTypeControl: false,
             fullscreenControl: false,
           }}
-          onLoad={(map) => setMap(map)}
         >
           {markerPosition && (
-            <Marker position={markerPosition} />
+            <Marker position={markerPosition} onDblClick={handleMarkerDblClick} />
           )}
         </GoogleMap>
       </Box>

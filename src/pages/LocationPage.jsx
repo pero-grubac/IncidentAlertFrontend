@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getIncidentsByLocationName } from "../services/incident.service";
+import { getCategories } from "../services/category.service";
 import {
   Card,
   CardContent,
@@ -36,14 +37,9 @@ const LocationPage = () => {
         setIncidents(incidentsData);
         setFilteredIncidents(incidentsData);
 
-        const uniqueCategories = [
-          ...new Set(
-            incidentsData.flatMap((incident) =>
-              incident.categories.map((cat) => cat.name)
-            )
-          ),
-        ];
-        setCategories(uniqueCategories);
+        const catResponse = await getCategories();
+        const catNames = catResponse.data.map((cat) => cat.name);
+        setCategories(catNames);
       } catch (error) {
         console.log(error);
       }

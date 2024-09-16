@@ -14,10 +14,14 @@ import {
   MenuItem,
   Select,
   TextField,
+  Button,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useLocation } from "react-router-dom";
 
 const LocationPage = () => {
   const { locationName } = useParams();
@@ -28,6 +32,12 @@ const LocationPage = () => {
   const [dateFilterEnd, setDateFilterEnd] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [categories, setCategories] = useState([]);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [newIncidentText, setNewIncidentText] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const location = useLocation();
+  const locationData = location.state?.location;
 
   useEffect(() => {
     const getByLocationName = async () => {
@@ -38,8 +48,7 @@ const LocationPage = () => {
         setFilteredIncidents(incidentsData);
 
         const catResponse = await getCategories();
-        const catNames = catResponse.data.map((cat) => cat.name);
-        setCategories(catNames);
+        setCategories(catResponse.data);
       } catch (error) {
         console.log(error);
       }
@@ -63,12 +72,46 @@ const LocationPage = () => {
     setFilteredIncidents(filtered);
   }, [dateFilterStart, dateFilterEnd, categoryFilter, incidents]);
 
+  useEffect(() => {
+    if (openAddDialog) {
+      // Postavi fokus na dijalog kada se otvori
+      const dialogElement = document.querySelector('[role="dialog"]');
+      if (dialogElement) {
+        dialogElement.focus();
+      }
+    }
+  }, [openAddDialog]);
   const handleCardClick = (incident) => {
     setSelectedIncident(incident);
   };
 
   const handleCloseDialog = () => {
     setSelectedIncident(null);
+  };
+  const handleAddDialogOpen = () => {
+    setOpenAddDialog(true);
+  };
+  const handleAddDialogClose = () => {
+    setOpenAddDialog(false);
+    setNewIncidentText("");
+  };
+  
+  const handleAddIncident = () => {
+    console.log("Adding incident:", {
+      text: newIncidentText,
+      categories: selectedCategories,
+      location: locationData,
+      datetime: new Date().toISOString(), 
+    });
+    handleAddDialogClose();
+  };
+
+  const handleCategoryChange = (event) => {
+    const selectedValues = event.target.value;
+    const selectedObjects = categories.filter((cat) =>
+      selectedValues.includes(cat.name)
+    );
+    setSelectedCategories(selectedObjects);
   };
 
   return (
@@ -121,8 +164,8 @@ const LocationPage = () => {
                     <em>None</em>
                   </MenuItem>
                   {categories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
+                    <MenuItem key={category.id} value={category.name}>
+                      {category.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -130,6 +173,14 @@ const LocationPage = () => {
             </Grid>
           </Grid>
         </LocalizationProvider>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddDialogOpen}
+          sx={{ height: "fit-content" }}
+        >
+          Add
+        </Button>
       </Box>
 
       {/* Display filtered incidents */}
@@ -176,6 +227,7 @@ const LocationPage = () => {
         </Grid>
       )}
 
+      {/* Incident Details Dialog */}
       <Dialog
         open={Boolean(selectedIncident)}
         onClose={handleCloseDialog}
@@ -193,7 +245,7 @@ const LocationPage = () => {
           {/* Text Section */}
           <Box
             sx={{
-              flex: "0 1 80%",
+              flex: "1",
               padding: 2,
               borderBottom: "1px solid #ddd",
               overflowY: "auto",
@@ -209,7 +261,6 @@ const LocationPage = () => {
           {/* Date Section */}
           <Box
             sx={{
-              flex: "0 1 5%",
               padding: 2,
               borderBottom: "1px solid #ddd",
             }}
@@ -222,7 +273,6 @@ const LocationPage = () => {
           {/* Location Section */}
           <Box
             sx={{
-              flex: "0 1 5%",
               padding: 2,
               borderBottom: "1px solid #ddd",
             }}
@@ -235,7 +285,6 @@ const LocationPage = () => {
           {/* Categories Section */}
           <Box
             sx={{
-              flex: "0 1 10%",
               padding: 2,
               overflowY: "auto",
               overflowWrap: "break-word",
@@ -246,6 +295,134 @@ const LocationPage = () => {
               Categories:{" "}
               {selectedIncident?.categories.map((cat) => cat.name).join(", ")}
             </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Incident Dialog */}
+      <Dialog
+        open={openAddDialog}
+        onClose={handleAddDialogClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            padding: 2,
+            height: "500px",
+          }}
+        >
+          {/* Text Section */}
+          <Box
+            sx={{
+              flex: "1",
+              marginBottom: 2,
+            }}
+          >
+            <TextField
+              fullWidth
+              label="Incident Text"
+              multiline
+              minRows={10} // Set minimum rows to control height
+              maxRows={10} // Optional: limit maximum rows
+              value={newIncidentText}
+              onChange={(e) => setNewIncidentText(e.target.value)}
+              sx={{
+                "& .MuiInputBase-root": {
+                  // Ensure TextField expands with the container
+                  height: "100%",
+                  minHeight: "150px", // Adjust as needed
+                },
+                "& .MuiFormControl-root": {
+                  // Remove margin and padding issues
+                  margin: 0,
+                  padding: 0,
+                },
+              }}
+            />
+          </Box>
+
+          {/* Date Section */}
+          <Box
+            sx={{
+              padding: 2,
+              borderBottom: "1px solid #ddd",
+            }}
+          >
+            <Typography color="text.secondary">
+              Date: {new Date().toLocaleString()} {/* Add "Date" label */}
+            </Typography>
+          </Box>
+
+          {/* Location Section */}
+          <Box
+            sx={{
+              padding: 2,
+              borderBottom: "1px solid #ddd",
+            }}
+          >
+            <Typography variant="body2">
+              Location: {locationName} {/* Add "Location" label */}
+            </Typography>
+          </Box>
+
+          {/* Category Section */}
+          <Box
+            sx={{
+              marginBottom: 2,
+            }}
+          >
+            <FormControl fullWidth size="small">
+              <Select
+                multiple
+                value={selectedCategories.map((cat) => cat.name)} // Display selected category names
+                onChange={handleCategoryChange} // Use the updated function
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Typography key={value}>{value}</Typography>
+                    ))}
+                  </Box>
+                )}
+                displayEmpty
+              >
+                <MenuItem value="" disabled>
+                  <em>Select Categories</em>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.name}>
+                    <Checkbox
+                      checked={selectedCategories.some(
+                        (cat) => cat.name === category.name
+                      )}
+                    />
+                    <ListItemText primary={category.name} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button onClick={handleAddDialogClose} color="secondary">
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddIncident}
+              sx={{ marginLeft: 2 }}
+            >
+              Add Incident
+            </Button>
           </Box>
         </DialogContent>
       </Dialog>

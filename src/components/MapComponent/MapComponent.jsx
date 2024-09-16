@@ -68,6 +68,8 @@ const geocodeAddress = async (address) => {
 
 const MapComponent = () => {
   const [markerPosition, setMarkerPosition] = useState(null);
+  const [locationData, setLocationData] = useState(null);
+
   const { searchTerm, setSearchTerm } = useSearch();
   const navigate = useNavigate();
   const { isLoaded } = useJsApiLoader({
@@ -104,9 +106,8 @@ const MapComponent = () => {
   }
 
   const handleMarkerDblClick = () => {
-    if (markerPosition) {
-      let locationName = searchTerm || "unknown-location";
-      navigate(`/location/${locationName}`);
+    if (markerPosition && locationData) {
+      navigate(`/location/${locationData.name}`, { state: { location: locationData } });
     }
   };
 
@@ -125,8 +126,14 @@ const MapComponent = () => {
       lng: clickedLng,
       name: locationName,
     });
-
+    const location = {
+      latitude: clickedLat,
+      longitude: clickedLng,
+      name: locationName,
+    };
     setSearchTerm(locationName);
+    setLocationData(location);
+    setMarkerPosition({ lat: clickedLat, lng: clickedLng });
   };
 
   return (

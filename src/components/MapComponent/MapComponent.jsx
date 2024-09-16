@@ -107,7 +107,9 @@ const MapComponent = () => {
 
   const handleMarkerDblClick = () => {
     if (markerPosition && locationData) {
-      navigate(`/location/${locationData.name}`, { state: { location: locationData } });
+      navigate(`/location/${locationData.name}`, {
+        state: { location: locationData },
+      });
     }
   };
 
@@ -127,6 +129,7 @@ const MapComponent = () => {
       name: locationName,
     });
     const location = {
+      id: 0,
       latitude: clickedLat,
       longitude: clickedLng,
       name: locationName,

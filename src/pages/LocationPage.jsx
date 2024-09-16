@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getIncidentsByLocationName } from "../services/incident.service";
+import {
+  getIncidentsByLocationName,
+  createIncident,
+} from "../services/incident.service";
 import { getCategories } from "../services/category.service";
 import {
   Card,
@@ -95,14 +98,20 @@ const LocationPage = () => {
     setOpenAddDialog(false);
     setNewIncidentText("");
   };
-  
-  const handleAddIncident = () => {
-    console.log("Adding incident:", {
+
+  const handleAddIncident = async () => {
+    const incident = {
+      id: 0,
       text: newIncidentText,
-      categories: selectedCategories,
+      dateTime: new Date().toISOString(),
       location: locationData,
-      datetime: new Date().toISOString(), 
-    });
+      categories: selectedCategories,
+    };
+    try {
+      await createIncident(incident);
+    } catch (error) {
+      console.log(error.response || error.message);
+    }
     handleAddDialogClose();
   };
 

@@ -1,7 +1,7 @@
 import base from "./baseService";
 
 const instance = base.service();
-const cntl = "Incidents";
+const cntl = "Incident";
 
 export const getIncidents = async () => {
   const response = await instance.get(`/${cntl}/getApproved`);

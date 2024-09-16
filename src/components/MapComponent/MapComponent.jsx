@@ -103,19 +103,9 @@ const MapComponent = () => {
     );
   }
 
-  const extractLocationName = (locationName) => {
-    const parts = locationName.split(" ");
-    if (parts.length > 1) {
-      const locationWithoutComma = parts[1].replace(",", ""); // Uklanjanje zareza
-      return locationWithoutComma || parts[2].replace(",", "");
-    }
-    return locationName.replace(",", ""); // Ukloni zarez ako postoji u jednoj reči
-  };
-
   const handleMarkerDblClick = () => {
     if (markerPosition) {
       let locationName = searchTerm || "unknown-location";
-      locationName = extractLocationName(locationName);
       navigate(`/location/${locationName}`);
     }
   };
@@ -155,7 +145,10 @@ const MapComponent = () => {
           }}
         >
           {markerPosition && (
-            <Marker position={markerPosition} onDblClick={handleMarkerDblClick} />
+            <Marker
+              position={markerPosition}
+              onDblClick={handleMarkerDblClick}
+            />
           )}
         </GoogleMap>
       </Box>

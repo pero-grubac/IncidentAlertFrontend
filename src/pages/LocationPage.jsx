@@ -83,6 +83,7 @@ const LocationPage = ({ locationId }) => {
 
   return (
     <Box>
+      <h1>Location: {locationName}</h1>
       <FilterSection
         dateFilterStart={dateFilterStart}
         setDateFilterStart={setDateFilterStart}

@@ -3,7 +3,7 @@ import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { Box, CircularProgress } from "@mui/material";
 import { useSearch } from "../../context/SearchContext";
 import { useNavigate } from "react-router-dom";
-
+import { useIncidents } from "../../context/IncidentContext";
 const containerStyle = {
   width: "100%",
   height: "100vh",
@@ -69,7 +69,7 @@ const geocodeAddress = async (address) => {
 const MapComponent = () => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [locationData, setLocationData] = useState(null);
-
+  const { incidents } = useIncidents();
   const { searchTerm, setSearchTerm } = useSearch();
   const navigate = useNavigate();
   const { isLoaded } = useJsApiLoader({
@@ -111,10 +111,10 @@ const MapComponent = () => {
     );
   }
 
-  const handleMarkerDblClick = () => {
-    if (markerPosition && locationData) {
-      navigate(`/location/${locationData.name}`, {
-        state: { location: locationData },
+  const handleMarkerDblClick = (location) => {
+    if (location) {
+      navigate(`/location/${location.name}`, {
+        state: { location },
       });
     }
   };
@@ -161,8 +161,32 @@ const MapComponent = () => {
           }}
         >
           {markerPosition && (
-            <Marker position={markerPosition} onDblClick={handleMarkerDblClick} />
+            <Marker
+              position={markerPosition}
+              onDblClick={() => handleMarkerDblClick(locationData)}
+            />
           )}
+          {incidents.map((incident) => (
+            <Marker
+              key={incident.id}
+              position={{
+                lat: incident.location.latitude,
+                lng: incident.location.longitude,
+              }}
+              icon={{
+                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                scaledSize: new window.google.maps.Size(32, 32),
+              }}
+              onDblClick={() =>
+                handleMarkerDblClick({
+                  id: incident.id,
+                  latitude: incident.location.latitude,
+                  longitude: incident.location.longitude,
+                  name: incident.location.name,
+                })
+              }
+            />
+          ))}
         </GoogleMap>
       </Box>
     </Box>

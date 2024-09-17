@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
-import { getIncidentsOnDate, getIncidentsInDateRange } from "../services/incident.service";
+import {
+  getIncidentsOnDate,
+  getIncidentsInDateRange,
+} from "../services/incident.service";
 
 const IncidentContext = createContext();
 
@@ -27,7 +30,9 @@ export const IncidentProvider = ({ children }) => {
   };
 
   return (
-    <IncidentContext.Provider value={{ incidents, fetchIncidentsOnDate, fetchIncidentsInDateRange }}>
+    <IncidentContext.Provider
+      value={{ incidents, fetchIncidentsOnDate, fetchIncidentsInDateRange }}
+    >
       {children}
     </IncidentContext.Provider>
   );

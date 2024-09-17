@@ -19,15 +19,16 @@ export const getIncidentsByCategoryName = async (name) => {
 };
 
 export const getIncidentsOnDate = async (date) => {
-  const response = await instance.get(`${cntl}/GetAllOnDate`, date);
+  const response = await instance.get(`${cntl}/GetAllOnDate/${date}`);
   return response;
 };
 
 export const getIncidentsInDateRange = async (startDate, endDate) => {
-  const response = await instance.get(`${cntl}/GetAllOnDate`, {
-    startDate,
-    endDate,
-  });
+  const response = await instance.get(
+    `${cntl}/GetAllInDateRange?startDate=${encodeURIComponent(
+      startDate
+    )}&endDate=${encodeURIComponent(endDate)}`
+  );
   return response;
 };
 

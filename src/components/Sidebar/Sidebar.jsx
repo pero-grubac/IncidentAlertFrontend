@@ -29,15 +29,15 @@ const Sidebar = ({ children }) => {
   }, [searchTerm]);
 
   const handleTodayIncidents = () => {
-    const today = dayjs().format("YYYY-MM-DD");
+    const today = dayjs().toISOString();
     fetchIncidentsOnDate(today);
   };
 
   const handleDateRangeIncidents = () => {
     if (startDate && endDate) {
       fetchIncidentsInDateRange(
-        startDate.format("YYYY-MM-DD"),
-        endDate.format("YYYY-MM-DD")
+        startDate.startOf("day").toISOString(),
+        endDate.startOf("day").toISOString()
       );
     }
   };
@@ -65,19 +65,19 @@ const Sidebar = ({ children }) => {
       libraries={["places"]}
     >
       <div className="container">
-        <div style={{ width: isOpen ? "400px" : "50px" }} className="sidebar">
+        <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
           <div className="top_section">
-            <h1 style={{ display: isOpen ? "block" : "none" }} className="logo">
+            <h1 className={`logo  ${isOpen ? "open" : "closed"}`}>
               Incident Alert
             </h1>
             <div
               style={{ marginLeft: isOpen ? "50px" : "0px" }}
-              className="bars"
+              className={`bars ${isOpen ? "visible" : "hidden"}`}
             >
               <MenuIcon onClick={toggle} />
             </div>
           </div>
-          <div className="menuItems">
+          <div className={`menuItems ${isOpen ? "visible" : "hidden"}`}>
             <div className="searchBox" style={{ marginBottom: "20px" }}>
               <Autocomplete
                 onLoad={(autocomplete) => {
@@ -155,6 +155,9 @@ const Sidebar = ({ children }) => {
                 Get Incidents in Date Range
               </Button>
             </LocalizationProvider>
+          </div>
+          <div className={`menuIcon ${!isOpen ? "visible" : "hidden"}`}>
+            <MenuIcon onClick={toggle} />
           </div>
         </div>
         <main>{children}</main>

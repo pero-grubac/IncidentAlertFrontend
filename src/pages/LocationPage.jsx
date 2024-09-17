@@ -4,9 +4,13 @@ import IncidentCard from "../components/IncidentCard/IncidentCard";
 import IncidentDetailsDialog from "../components/IncidentDetailsDialog/IncidentDetailsDialog";
 import AddIncidentDialog from "../components/AddIncidentDialog/AddIncidentDialog";
 import { Box, Grid, CircularProgress } from "@mui/material";
-import { getIncidentsByLocationName } from "../services/incident.service";
+import {
+  getIncidentsByLocationName,
+  createIncident,
+} from "../services/incident.service";
 import { useParams } from "react-router-dom";
 import { getCategories } from "../services/category.service";
+import { useLocation } from "react-router-dom";
 
 const LocationPage = ({ locationId }) => {
   const [incidents, setIncidents] = useState([]);
@@ -20,7 +24,8 @@ const LocationPage = ({ locationId }) => {
   const [newIncidentText, setNewIncidentText] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const { locationName } = useParams();
-
+  const location = useLocation();
+  const locationData = location.state?.location;
   useEffect(() => {
     // Fetch incidents and categories
     const fetchIncidents = async () => {
@@ -50,33 +55,22 @@ const LocationPage = ({ locationId }) => {
   }, [locationName]);
 
   const handleAddIncident = async () => {
-    const newIncident = {
+    const incident = {
+      id: 0,
       text: newIncidentText,
       dateTime: new Date().toISOString(),
-      location: { id: locationId },
+      location: locationData,
       categories: selectedCategories,
     };
-
     try {
-      await fetch("/api/incidents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newIncident),
-      });
-      setNewIncidentText("");
-      setSelectedCategories([]);
-      setIsAddIncidentOpen(false);
-      // Refresh incidents list
-      const response = await fetch(`/api/incidents?locationId=${locationId}`);
-      const data = await response.json();
-      setIncidents(data);
+      await createIncident(incident);
     } catch (error) {
-      console.error("Failed to add incident", error);
+      console.log(error.response || error.message);
     }
+    setNewIncidentText("");
+    setSelectedCategories([]);
+    setIsAddIncidentOpen(false);
   };
-
   const handleIncidentClick = (incident) => {
     setSelectedIncident(incident);
   };

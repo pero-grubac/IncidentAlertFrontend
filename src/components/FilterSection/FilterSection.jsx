@@ -28,11 +28,6 @@ const FilterSection = ({
         <Grid container spacing={2} sx={{ width: "100%" }}>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              slotProps={{
-                actionBar: {
-                  actions: ["clear"],
-                },
-              }}
               label="Start Date"
               value={dateFilterStart}
               onChange={(newValue) => setDateFilterStart(newValue)}
@@ -43,11 +38,6 @@ const FilterSection = ({
           </Grid>
           <Grid item xs={12} sm={4} md={3}>
             <DatePicker
-              slotProps={{
-                actionBar: {
-                  actions: ["clear"],
-                },
-              }}
               label="End Date"
               value={dateFilterEnd}
               onChange={(newValue) => setDateFilterEnd(newValue)}

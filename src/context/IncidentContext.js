@@ -28,7 +28,6 @@ export const IncidentProvider = ({ children }) => {
     try {
       const response = await getIncidentsInDateRange(startDate, endDate);
       setIncidents(response.data);
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching incidents in date range", error);
     }

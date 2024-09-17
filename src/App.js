@@ -1,4 +1,3 @@
-// App.js
 import React from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import MapComponent from "./components/MapComponent/MapComponent";
@@ -10,20 +9,27 @@ import {
   Navigate,
 } from "react-router-dom";
 import LocationPage from "./pages/LocationPage";
+import { IncidentProvider } from "./context/IncidentContext";
+
 const App = () => {
   return (
     <SearchProvider>
-      <Router>
-        <Sidebar>
-          <Routes>
-            {/* Početna stranica sa MapComponent */}
-            <Route path="/" element={<MapComponent />} />
-            {/* Stranica za prikaz lokacije */}
-            <Route path="/location/:locationName" element={<LocationPage />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Sidebar>
-      </Router>
+      <IncidentProvider>
+        <Router>
+          <Sidebar>
+            <Routes>
+              {/* Početna stranica sa MapComponent */}
+              <Route path="/" element={<MapComponent />} />
+              {/* Stranica za prikaz lokacije */}
+              <Route
+                path="/location/:locationName"
+                element={<LocationPage />}
+              />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Sidebar>
+        </Router>
+      </IncidentProvider>
     </SearchProvider>
   );
 };

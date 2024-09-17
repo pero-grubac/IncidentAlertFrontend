@@ -19,9 +19,7 @@ export const getIncidentsByCategoryName = async (name) => {
 };
 
 export const getIncidentsOnDate = async (date) => {
-  const response = await instance.get(`${cntl}/GetAllOnDate`, {
-    date,
-  });
+  const response = await instance.get(`${cntl}/GetAllOnDate`, date);
   return response;
 };
 

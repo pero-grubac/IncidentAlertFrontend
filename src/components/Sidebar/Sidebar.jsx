@@ -5,12 +5,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSearch } from "../../context/SearchContext";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const { searchTerm, setSearchTerm } = useSearch();
   const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   const autocompleteRef = useRef(null);
 
@@ -20,6 +22,7 @@ const Sidebar = ({ children }) => {
 
   const handleSearch = () => {
     setSearchTerm(localSearchTerm);
+    navigate("/");
   };
 
   const onPlaceChanged = () => {

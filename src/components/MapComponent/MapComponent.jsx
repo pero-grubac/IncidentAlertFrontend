@@ -83,6 +83,12 @@ const MapComponent = () => {
         const location = await geocodeAddress(searchTerm);
         if (location) {
           setMarkerPosition(location);
+          setLocationData({
+            id: 0,
+            latitude: location.lat,
+            longitude: location.lng,
+            name: searchTerm,
+          });
         }
       };
       geocodeAndPlaceMarker();
@@ -155,10 +161,7 @@ const MapComponent = () => {
           }}
         >
           {markerPosition && (
-            <Marker
-              position={markerPosition}
-              onDblClick={handleMarkerDblClick}
-            />
+            <Marker position={markerPosition} onDblClick={handleMarkerDblClick} />
           )}
         </GoogleMap>
       </Box>

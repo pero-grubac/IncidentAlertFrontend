@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { TextField, IconButton } from "@mui/material";
+import { TextField, IconButton, Button, Grid } from "@mui/material";
 import "./Sidebar.css";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSearch } from "../../context/SearchContext";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useIncidents } from "../../context/IncidentContext";
+import dayjs from "dayjs";
 
 const Sidebar = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,12 +18,29 @@ const Sidebar = ({ children }) => {
   const { searchTerm, setSearchTerm } = useSearch();
   const [localSearchTerm, setLocalSearchTerm] = useState("");
   const navigate = useNavigate();
+  const { fetchIncidentsOnDate, fetchIncidentsInDateRange } = useIncidents();
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const autocompleteRef = useRef(null);
 
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
   }, [searchTerm]);
+
+  const handleTodayIncidents = () => {
+    const today = dayjs().format("YYYY-MM-DD");
+    fetchIncidentsOnDate(today);
+  };
+
+  const handleDateRangeIncidents = () => {
+    if (startDate && endDate) {
+      fetchIncidentsInDateRange(
+        startDate.format("YYYY-MM-DD"),
+        endDate.format("YYYY-MM-DD")
+      );
+    }
+  };
 
   const handleSearch = () => {
     setSearchTerm(localSearchTerm);
@@ -56,7 +78,7 @@ const Sidebar = ({ children }) => {
             </div>
           </div>
           <div className="menuItems">
-            <div className="searchBox">
+            <div className="searchBox" style={{ marginBottom: "20px" }}>
               <Autocomplete
                 onLoad={(autocomplete) => {
                   autocompleteRef.current = autocomplete;
@@ -85,10 +107,58 @@ const Sidebar = ({ children }) => {
                 />
               </Autocomplete>
             </div>
+            {/* Button for today's incidents */}
+            <Button
+              onClick={handleTodayIncidents}
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 2, mb: 2 }} // Add margin-top here
+            >
+              Get Today's Incidents
+            </Button>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Grid container spacing={1}>
+                {" "}
+                {/* Razmak između DatePicker-a */}
+                <Grid item xs={6}>
+                  {" "}
+                  {/* Polovina širine za svaki DatePicker */}
+                  <DatePicker
+                    label="Start Date"
+                    value={startDate}
+                    onChange={(newDate) => setStartDate(dayjs(newDate))}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth sx={{ mt: 2 }} />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <DatePicker
+                    label="End Date"
+                    value={endDate}
+                    onChange={(newDate) => setEndDate(dayjs(newDate))}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth sx={{ mt: 2 }} />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+
+              <Button
+                onClick={handleDateRangeIncidents}
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ mt: 2 }}
+              >
+                Get Incidents in Date Range
+              </Button>
+            </LocalizationProvider>
           </div>
         </div>
         <main>{children}</main>
-      </div>{" "}
+      </div>
     </LoadScript>
   );
 };

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { getIncidentsOnDate, getIncidentsInDateRange } from "../services/incidentService";
+import { getIncidentsOnDate, getIncidentsInDateRange } from "../services/incident.service";
 
 const IncidentContext = createContext();
 

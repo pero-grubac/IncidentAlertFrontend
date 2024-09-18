@@ -81,7 +81,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
           </Typography>
         </Box>
 
-        <Box sx={{ padding: 2 }}>
+        <Box sx={{ padding: 2, display: "flex", justifyContent: "flex-end" }}>
           <Button variant="contained" onClick={onClose}>
             Close
           </Button>

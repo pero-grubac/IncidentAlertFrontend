@@ -11,6 +11,7 @@ import {
 import { useParams } from "react-router-dom";
 import { getCategories } from "../services/category.service";
 import { useLocation } from "react-router-dom";
+import dayjs from 'dayjs';
 
 const LocationPage = ({ locationId }) => {
   const [incidents, setIncidents] = useState([]);
@@ -23,6 +24,7 @@ const LocationPage = ({ locationId }) => {
   const [isAddIncidentOpen, setIsAddIncidentOpen] = useState(false);
   const [newIncidentText, setNewIncidentText] = useState("");
   const [newIncidentTitle, setNewIncidentTitle] = useState("");
+  const [newIncidentDateTime, setNewIncidentDateTime] = useState(dayjs());
 
   const [selectedCategories, setSelectedCategories] = useState([]);
   const { locationName } = useParams();
@@ -54,7 +56,6 @@ const LocationPage = ({ locationId }) => {
 
     fetchIncidents();
     fetchCategories();
-    console.log(incidents);
   }, [locationName]);
 
   const handleAddIncident = async () => {
@@ -62,7 +63,7 @@ const LocationPage = ({ locationId }) => {
       id: 0,
       text: newIncidentText,
       title: newIncidentTitle,
-      dateTime: new Date().toISOString(),
+      dateTime: newIncidentDateTime.toISOString(),
       location: locationData,
       categories: selectedCategories,
     };
@@ -73,7 +74,7 @@ const LocationPage = ({ locationId }) => {
     }
     setNewIncidentText("");
     setNewIncidentTitle("");
-
+    setNewIncidentDateTime("");
     setSelectedCategories([]);
     setIsAddIncidentOpen(false);
   };
@@ -135,6 +136,8 @@ const LocationPage = ({ locationId }) => {
         setNewIncidentText={setNewIncidentText}
         newIncidentTitle={newIncidentTitle}
         setNewIncidentTitle={setNewIncidentTitle}
+        newIncidentDateTime={newIncidentDateTime}
+        setNewIncidentDateTime={setNewIncidentDateTime}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         categories={categories}

@@ -13,6 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const AddIncidentDialog = ({
   open,
@@ -25,6 +29,8 @@ const AddIncidentDialog = ({
   setSelectedCategories,
   categories,
   onAddIncident,
+  newIncidentDateTime,
+  setNewIncidentDateTime,
 }) => {
   const handleCategoryChange = (event) => {
     const selectedValues = event.target.value;
@@ -60,7 +66,6 @@ const AddIncidentDialog = ({
             maxRows={1}
             value={newIncidentTitle}
             onChange={(e) => setNewIncidentTitle(e.target.value)}
-           
           />
         </Box>
         {/* Text Section */}
@@ -74,8 +79,8 @@ const AddIncidentDialog = ({
             fullWidth
             label="Incident Text"
             multiline
-            minRows={7}
-            maxRows={7}
+            minRows={8}
+            maxRows={8}
             value={newIncidentText}
             onChange={(e) => setNewIncidentText(e.target.value)}
             sx={{
@@ -91,26 +96,32 @@ const AddIncidentDialog = ({
           />
         </Box>
 
-        {/* Date Section */}
+        {/* Location and Date Sections Side by Side */}
         <Box
           sx={{
+            display: "flex",
+            justifyContent: "space-between", 
+            alignItems: "center", 
             padding: 2,
             borderBottom: "1px solid #ddd",
           }}
         >
-          <Typography color="text.secondary">
-            Date: {new Date().toLocaleString()}
-          </Typography>
-        </Box>
+          {/* Location Section */}
+          <Box sx={{ flex: 1, marginRight: 2 }}>
+            <Typography variant="body2">Location: {locationName}</Typography>
+          </Box>
 
-        {/* Location Section */}
-        <Box
-          sx={{
-            padding: 2,
-            borderBottom: "1px solid #ddd",
-          }}
-        >
-          <Typography variant="body2">Location: {locationName}</Typography>
+          {/* Date Section */}
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box sx={{ flex: 1 }}>
+              <DateTimePicker
+                label="Incident Date and Time"
+                value={newIncidentDateTime || dayjs()}
+                onChange={(newValue) => setNewIncidentDateTime(newValue)}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </Box>
+          </LocalizationProvider>
         </Box>
 
         {/* Category Section */}

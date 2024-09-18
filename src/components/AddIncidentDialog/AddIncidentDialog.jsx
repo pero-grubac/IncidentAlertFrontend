@@ -19,6 +19,8 @@ const AddIncidentDialog = ({
   onClose,
   newIncidentText,
   setNewIncidentText,
+  newIncidentTitle,
+  setNewIncidentTitle,
   selectedCategories,
   setSelectedCategories,
   categories,
@@ -43,6 +45,24 @@ const AddIncidentDialog = ({
           height: "500px",
         }}
       >
+        {/* Title Section */}
+        <Box
+          sx={{
+            flex: "1",
+            marginBottom: 2,
+          }}
+        >
+          <TextField
+            fullWidth
+            label="Incident Title"
+            multiline
+            minRows={1}
+            maxRows={1}
+            value={newIncidentTitle}
+            onChange={(e) => setNewIncidentTitle(e.target.value)}
+           
+          />
+        </Box>
         {/* Text Section */}
         <Box
           sx={{
@@ -54,8 +74,8 @@ const AddIncidentDialog = ({
             fullWidth
             label="Incident Text"
             multiline
-            minRows={10}
-            maxRows={10}
+            minRows={7}
+            maxRows={7}
             value={newIncidentText}
             onChange={(e) => setNewIncidentText(e.target.value)}
             sx={{
@@ -90,9 +110,7 @@ const AddIncidentDialog = ({
             borderBottom: "1px solid #ddd",
           }}
         >
-          <Typography variant="body2">
-            Location: {locationName}
-          </Typography>
+          <Typography variant="body2">Location: {locationName}</Typography>
         </Box>
 
         {/* Category Section */}
@@ -128,11 +146,7 @@ const AddIncidentDialog = ({
           </FormControl>
         </Box>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={onAddIncident}
-        >
+        <Button variant="contained" color="primary" onClick={onAddIncident}>
           Add Incident
         </Button>
       </DialogContent>

@@ -12,6 +12,23 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
           padding: 0,
         }}
       >
+        {/* Title Section */}
+        <Box
+          sx={{
+            flex: "0 0 auto", // Sprječava širenje ove sekcije
+            padding: 2,
+            maxHeight: "100px", // Ograničava maksimalnu visinu naslova
+            borderBottom: "1px solid #ddd",
+            overflowY: "auto",
+            overflowWrap: "break-word",
+            wordBreak: "break-word",
+          }}
+        >
+          <Typography variant="h6" component="div">
+            {incident?.title}
+          </Typography>
+        </Box>
+
         {/* Text Section */}
         <Box
           sx={{
@@ -27,7 +44,6 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
             {incident?.text}
           </Typography>
         </Box>
-
         {/* Date Section */}
         <Box
           sx={{
@@ -39,7 +55,6 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
             {new Date(incident?.dateTime).toLocaleString()}
           </Typography>
         </Box>
-
         {/* Location Section */}
         <Box
           sx={{

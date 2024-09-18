@@ -16,8 +16,9 @@ const IncidentCard = ({ incident, onClick }) => {
             WebkitLineClamp: 1,
           }}
         >
-          {incident.text}
+          {incident.title}
         </Typography>
+
         <Typography color="text.secondary">
           {new Date(incident.dateTime).toLocaleString()}
         </Typography>

@@ -22,6 +22,8 @@ const LocationPage = ({ locationId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddIncidentOpen, setIsAddIncidentOpen] = useState(false);
   const [newIncidentText, setNewIncidentText] = useState("");
+  const [newIncidentTitle, setNewIncidentTitle] = useState("");
+
   const [selectedCategories, setSelectedCategories] = useState([]);
   const { locationName } = useParams();
   const location = useLocation();
@@ -52,12 +54,14 @@ const LocationPage = ({ locationId }) => {
 
     fetchIncidents();
     fetchCategories();
+    console.log(incidents);
   }, [locationName]);
 
   const handleAddIncident = async () => {
     const incident = {
       id: 0,
       text: newIncidentText,
+      title: newIncidentTitle,
       dateTime: new Date().toISOString(),
       location: locationData,
       categories: selectedCategories,
@@ -68,6 +72,8 @@ const LocationPage = ({ locationId }) => {
       console.log(error.response || error.message);
     }
     setNewIncidentText("");
+    setNewIncidentTitle("");
+
     setSelectedCategories([]);
     setIsAddIncidentOpen(false);
   };
@@ -127,6 +133,8 @@ const LocationPage = ({ locationId }) => {
         onClose={() => setIsAddIncidentOpen(false)}
         newIncidentText={newIncidentText}
         setNewIncidentText={setNewIncidentText}
+        newIncidentTitle={newIncidentTitle}
+        setNewIncidentTitle={setNewIncidentTitle}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         categories={categories}

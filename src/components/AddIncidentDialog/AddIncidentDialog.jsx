@@ -96,32 +96,17 @@ const AddIncidentDialog = ({
           />
         </Box>
 
-        {/* Location and Date Sections Side by Side */}
+        {/* Location Section */}
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between", 
-            alignItems: "center", 
             padding: 2,
-            borderBottom: "1px solid #ddd",
+
+            border: "1px solid #ddd", // Add border around the box
+            borderRadius: 1, // Optional: to add rounded corners
+            marginBottom: 2,
           }}
         >
-          {/* Location Section */}
-          <Box sx={{ flex: 1, marginRight: 2 }}>
-            <Typography variant="body2">Location: {locationName}</Typography>
-          </Box>
-
-          {/* Date Section */}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box sx={{ flex: 1 }}>
-              <DateTimePicker
-                label="Incident Date and Time"
-                value={newIncidentDateTime || dayjs()}
-                onChange={(newValue) => setNewIncidentDateTime(newValue)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-              />
-            </Box>
-          </LocalizationProvider>
+          <Typography variant="body2">Location: {locationName}</Typography>
         </Box>
 
         {/* Category Section */}
@@ -157,9 +142,31 @@ const AddIncidentDialog = ({
           </FormControl>
         </Box>
 
-        <Button variant="contained" color="primary" onClick={onAddIncident}>
-          Add Incident
-        </Button>
+        {/* DateTime Section and Add Button Side by Side */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 2px", // Adjust the padding here
+            marginBottom: 1,
+          }}
+        >
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box sx={{ flex: 1, marginRight: 1 }}>
+              <DateTimePicker
+                label="Incident Date and Time"
+                value={newIncidentDateTime || dayjs()}
+                onChange={(newValue) => setNewIncidentDateTime(newValue)}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </Box>
+          </LocalizationProvider>
+
+          <Button variant="contained" color="primary" onClick={onAddIncident}>
+            Add Incident
+          </Button>
+        </Box>
       </DialogContent>
     </Dialog>
   );

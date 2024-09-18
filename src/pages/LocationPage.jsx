@@ -11,7 +11,8 @@ import {
 import { useParams } from "react-router-dom";
 import { getCategories } from "../services/category.service";
 import { useLocation } from "react-router-dom";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
+import { Snackbar, Alert } from "@mui/material";
 
 const LocationPage = ({ locationId }) => {
   const [incidents, setIncidents] = useState([]);
@@ -30,6 +31,10 @@ const LocationPage = ({ locationId }) => {
   const { locationName } = useParams();
   const location = useLocation();
   const locationData = location.state?.location;
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   useEffect(() => {
     // Fetch incidents and categories
     const fetchIncidents = async () => {
@@ -59,6 +64,18 @@ const LocationPage = ({ locationId }) => {
   }, [locationName]);
 
   const handleAddIncident = async () => {
+    if (
+      !newIncidentTitle ||
+      !newIncidentText ||
+      !newIncidentDateTime ||
+      selectedCategories.length === 0
+    ) {
+      setSnackbarMessage(
+        "Please fill in all fields before adding the incident."
+      );
+      setOpenSnackbar(true);
+      return;
+    }
     const incident = {
       id: 0,
       text: newIncidentText,
@@ -143,6 +160,15 @@ const LocationPage = ({ locationId }) => {
         categories={categories}
         onAddIncident={handleAddIncident}
       />
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity="error">
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

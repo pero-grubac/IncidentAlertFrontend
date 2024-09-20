@@ -26,7 +26,7 @@ const LocationPage = ({ locationId }) => {
   const [newIncidentText, setNewIncidentText] = useState("");
   const [newIncidentTitle, setNewIncidentTitle] = useState("");
   const [newIncidentDateTime, setNewIncidentDateTime] = useState(dayjs());
-
+  const [selectedImages, setSelectedImages] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const { locationName } = useParams();
   const location = useLocation();
@@ -76,23 +76,37 @@ const LocationPage = ({ locationId }) => {
       setOpenSnackbar(true);
       return;
     }
-    const incident = {
-      id: 0,
-      text: newIncidentText,
-      title: newIncidentTitle,
-      dateTime: newIncidentDateTime.toISOString(),
-      location: locationData,
-      categories: selectedCategories,
-    };
+
+    const formData = new FormData();
+    // const filesArray = Array.from(selectedImages);
+    // Append incident data
+    formData.append("title", newIncidentTitle);
+    formData.append("text", newIncidentText);
+    formData.append("dateTime", newIncidentDateTime.toISOString());
+    formData.append("location.id", locationData.id);
+    formData.append("location.latitude", locationData.latitude);
+    formData.append("location.longitude", locationData.longitude);
+    formData.append("location.name", locationData.name);
+    //  formData.append("categories", selectedCategories);
+    console.log( newIncidentDateTime.toISOString());
+    for (let i = 0; i < selectedCategories.length; i++) {
+      formData.append(`categories`, selectedCategories[i]);
+    }
+    for (let i = 0; i < selectedImages.length; i++) {
+      formData.append(`images`, selectedImages[i]);
+    }
+
     try {
-      await createIncident(incident);
+      await createIncident(formData);
     } catch (error) {
       console.log(error.response || error.message);
     }
     setNewIncidentText("");
     setNewIncidentTitle("");
-    setNewIncidentDateTime("");
+    // setNewIncidentDateTime("");
     setSelectedCategories([]);
+    setSelectedImages([]);
+
     setIsAddIncidentOpen(false);
   };
   const handleIncidentClick = (incident) => {
@@ -158,6 +172,8 @@ const LocationPage = ({ locationId }) => {
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         categories={categories}
+        selectedImages={selectedImages}
+        setSelectedImages={setSelectedImages}
         onAddIncident={handleAddIncident}
       />
       <Snackbar

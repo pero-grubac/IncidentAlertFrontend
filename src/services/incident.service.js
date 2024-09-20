@@ -1,6 +1,8 @@
 import base from "./baseService";
+import multipartService from "./mulitpartBaseService";
 
 const instance = base.service();
+const multipart = multipartService.service();
 const cntl = "/Incident";
 
 export const getIncidents = async () => {
@@ -33,7 +35,7 @@ export const getIncidentsInDateRange = async (startDate, endDate) => {
 };
 
 export const createIncident = async (incident) => {
-  const response = await instance.post(`${cntl}`, incident);
+  const response = await multipart.post(`${cntl}`, incident);
 
   return response;
 };

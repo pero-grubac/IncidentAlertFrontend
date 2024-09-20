@@ -5,13 +5,11 @@ import enviroments from "../enviroments";
 const baseUrlConfig = {
   baseUrl: enviroments().baseServiceUrl,
 };
-
-// Kreiramo instancu axios-a
-const createAxiosInstance = () => {
+const createMultiPartAxiosInstance = () => {
   const instance = axios.create({
     baseURL: baseUrlConfig.baseUrl,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
     },
   });
 
@@ -29,10 +27,8 @@ const createAxiosInstance = () => {
   return instance;
 };
 
-
-
 // Eksportujemo instancu axios-a
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-  service: () => createAxiosInstance(),
+  service: () => createMultiPartAxiosInstance(),
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +11,16 @@ import {
   ListItemText,
   Button,
   Typography,
+  LinearProgress,  IconButton,
+
 } from "@mui/material";
+
 import { useParams } from "react-router-dom";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-
+import DeleteIcon from "@mui/icons-material/Delete"; 
 const AddIncidentDialog = ({
   open,
   onClose,
@@ -31,16 +34,59 @@ const AddIncidentDialog = ({
   onAddIncident,
   newIncidentDateTime,
   setNewIncidentDateTime,
+  selectedImages,
+  setSelectedImages,
 }) => {
-  const handleCategoryChange = (event) => {
-    const selectedValues = event.target.value;
-    const selectedObjects = categories.filter((cat) =>
-      selectedValues.includes(cat.name)
-    );
-    setSelectedCategories(selectedObjects);
-  };
   const { locationName } = useParams();
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadError, setUploadError] = useState({});
+  const [imagePreviews, setImagePreviews] = useState([]);
 
+  const handleCategoryChange = (event) => {
+    setSelectedCategories(event.target.value);
+
+  };
+
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const previews = [];
+    const progress = {};
+    const errors = {};
+  
+    files.forEach((file, index) => {
+      if (file.size > 2 * 1024 * 1024) {
+        errors[index] = "Image is too large (max 2MB).";
+      } else {
+        const previewUrl = URL.createObjectURL(file);
+        previews.push({ file, previewUrl });
+  
+        progress[index] = 0;
+        setUploadProgress((prev) => ({ ...prev, [index]: 0 })); // Initialize progress to 0
+  
+        // Simulate upload progress
+        const interval = setInterval(() => {
+          setUploadProgress((prevProgress) => {
+            const newProgress = prevProgress[index] + 10;
+            if (newProgress >= 100) {
+              clearInterval(interval);
+              return { ...prevProgress, [index]: 100 };
+            }
+            return { ...prevProgress, [index]: newProgress };
+          });
+        }, 200);
+      }
+    });
+  
+    setUploadError(errors);
+    setImagePreviews(previews);
+    setSelectedImages(files);
+  };
+  const handleRemoveImage = (index) => {
+    const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
+    const updatedFiles = selectedImages.filter((_, i) => i !== index);
+    setImagePreviews(updatedPreviews);
+    setSelectedImages(updatedFiles);
+  };
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogContent
@@ -114,7 +160,7 @@ const AddIncidentDialog = ({
           <FormControl fullWidth size="small">
             <Select
               multiple
-              value={selectedCategories.map((cat) => cat.name)}
+              value={selectedCategories}
               onChange={handleCategoryChange}
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -142,6 +188,38 @@ const AddIncidentDialog = ({
           </FormControl>
         </Box>
 
+        <Box sx={{ marginBottom: 2 }}>
+          {imagePreviews.map((preview, index) => (
+            <Box key={index} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+              <img
+                src={preview.previewUrl}
+                alt="Preview"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "cover",
+                  marginRight: "10px",
+                }}
+              />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2">{preview.file.name}</Typography>
+                {uploadError[index] ? (
+                  <Typography color="error">{uploadError[index]}</Typography>
+                ) : (
+                  <LinearProgress
+                    variant="determinate"
+                    value={uploadProgress[index] || 0}
+                    sx={{ marginTop: 1 }}
+                  />
+                )}
+              </Box>
+              <IconButton onClick={() => handleRemoveImage(index)} aria-label="delete">
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          ))}
+        </Box>
+
         {/* DateTime Section and Add Button Side by Side */}
         <Box
           sx={{
@@ -162,7 +240,21 @@ const AddIncidentDialog = ({
               />
             </Box>
           </LocalizationProvider>
-
+          <Button
+            variant="contained"
+            component="label"
+            color="primary"
+            sx={{ marginRight: 2 }} // Add some space between buttons
+          >
+            Add Images
+            <input
+              type="file"
+              hidden
+              accept="image/onm image/jpg"
+              multiple
+              onChange={handleImageUpload}
+            />
+          </Button>
           <Button variant="contained" color="primary" onClick={onAddIncident}>
             Add Incident
           </Button>

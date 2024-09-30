@@ -34,6 +34,7 @@ const ImagePreviewDialog = ({ open, onClose, imageUrl }) => {
 const IncidentDetailsDialog = ({ open, onClose, incident }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [language, setLanguage] = useState("sr");
+  const [translatedTitle, setTranslatedTitle] = useState(incident?.title);
   const [translatedText, setTranslatedText] = useState(incident?.text);
   const [loading, setLoading] = useState(false);
   const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
@@ -52,25 +53,25 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
   const translateText = async (text, targetLanguage, cancelToken) => {
     try {
       setLoading(true);
-  
+
       const response = await axios.post(
-        `https://translation.googleapis.com/language/translate/v2`,
+        TRANSLATE_URL,
         {
-          q: text,              // The text to translate
-          target: targetLanguage, // The target language (e.g., 'en' for English)
-          format: "text",        // Specify format as text
+          q: text,
+          target: targetLanguage,
+          format: "text",
         },
         {
           headers: {
-            "Content-Type": "application/json", // Ensure JSON content type
+            "Content-Type": "application/json",
           },
           params: {
-            key: GOOGLE_API_KEY, // The API key is passed as a query parameter
+            key: GOOGLE_API_KEY,
           },
-          cancelToken, // Pass the cancel token to allow request cancellation
+          cancelToken,
         }
       );
-  
+
       setLoading(false);
       return response.data.data.translations[0].translatedText;
     } catch (error) {
@@ -83,28 +84,31 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
       return text;
     }
   };
-  
 
   // Handle language change
   const handleLanguageChange = async (event) => {
     const newLang = event.target.value;
     setLanguage(newLang);
     const langCode = newLang === "sr" ? "sr" : "en";
-  
+
     const cancelTokenSource = axios.CancelToken.source(); // Create a new cancel token
-    const translated = await translateText(incident?.text, langCode, cancelTokenSource.token);
-    setTranslatedText(translated);
+    const translatedTitle = await translateText(incident?.title, langCode, cancelTokenSource.token);
+    const translatedText = await translateText(incident?.text, langCode, cancelTokenSource.token);
+    setTranslatedTitle(translatedTitle);
+    setTranslatedText(translatedText);
   };
-  
 
   useEffect(() => {
     const cancelTokenSource = axios.CancelToken.source(); // Create a cancel token
 
     const initialTranslation = async () => {
       if (language !== "sr") {
-        const translated = await translateText(incident?.text, language, cancelTokenSource.token);
-        setTranslatedText(translated);
+        const translatedTitle = await translateText(incident?.title, language, cancelTokenSource.token);
+        const translatedText = await translateText(incident?.text, language, cancelTokenSource.token);
+        setTranslatedTitle(translatedTitle);
+        setTranslatedText(translatedText);
       } else {
+        setTranslatedTitle(incident?.title);
         setTranslatedText(incident?.text);
       }
     };
@@ -115,7 +119,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
     return () => {
       cancelTokenSource.cancel("Translation request canceled on component unmount.");
     };
-  }, [language, incident?.text]);
+  }, [language, incident?.title, incident?.text]);
 
   return (
     <>
@@ -141,7 +145,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
             }}
           >
             <Typography variant="h6" component="div">
-              {incident?.title}
+              {loading ? "Translating..." : translatedTitle}
             </Typography>
           </Box>
 

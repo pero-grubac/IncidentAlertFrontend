@@ -1,5 +1,17 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, Box, Typography, Button } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  Box,
+  Typography,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+} from "@mui/material";
+import axios from "axios";
+
+import ReactCountryFlag from "react-country-flag";
 const ImagePreviewDialog = ({ open, onClose, imageUrl }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -16,16 +28,58 @@ const ImagePreviewDialog = ({ open, onClose, imageUrl }) => {
   );
 };
 const IncidentDetailsDialog = ({ open, onClose, incident }) => {
-  const [selectedImage, setSelectedImage] = useState(null); // Store the selected image for preview
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [language, setLanguage] = useState("sr");
+  const [translatedText, setTranslatedText] = useState(incident?.text);
+  const [loading, setLoading] = useState(false);
 
   const handleImageClick = (imageUrl) => {
-    console.log(imageUrl);
-    setSelectedImage(imageUrl); // Set the clicked image for full preview
+    setSelectedImage(imageUrl);
   };
 
   const handleCloseImagePreview = () => {
-    setSelectedImage(null); // Close the full-size image preview
+    setSelectedImage(null);
   };
+  const translateText = async (text, targetLang) => {
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        "https://libretranslate.com/translate",
+        {
+          q: text,
+          source: "auto",
+          target: targetLang,
+          format: "text",
+        }
+      );
+      setLoading(false);
+      return response.data.translatedText;
+    } catch (error) {
+      setLoading(false);
+      console.error("Translation error:", error);
+      return text;
+    }
+  };
+  const handleLanguageChange = async (event) => {
+    const newLang = event.target.value;
+    setLanguage(newLang);
+    const langCode = newLang === "sr" ? "sr" : "en";
+
+    const translated = await translateText(incident?.text, langCode);
+    setTranslatedText(translated);
+  };
+
+  useEffect(() => {
+    const initialTranslation = async () => {
+      if (language !== "sr") {
+        const translated = await translateText(incident?.text, language);
+        setTranslatedText(translated);
+      } else {
+        setTranslatedText(incident?.text);
+      }
+    };
+    initialTranslation();
+  }, [language, incident?.text]);
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -65,9 +119,15 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               wordBreak: "break-word",
             }}
           >
-            <Typography variant="h6" component="div">
-              {incident?.text}
-            </Typography>
+            {loading ? ( // Display loading state
+              <Typography variant="h6" component="div">
+                Translating...
+              </Typography>
+            ) : (
+              <Typography variant="h6" component="div">
+                {translatedText}
+              </Typography>
+            )}
           </Box>
           {/* Date Section */}
           <Box
@@ -135,8 +195,56 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               ))}
             </Box>
           )}
-          <Box sx={{ padding: 2, display: "flex", justifyContent: "flex-end" }}>
-            <Button variant="contained" onClick={onClose}>
+          {/* Close and Language Selector Section */}
+          <Box
+            sx={{
+              padding: 2,
+              display: "flex",
+              justifyContent: "space-between", // Space between close button and language selector
+              alignItems: "center",
+            }}
+          >
+            {/* Language Selector */}
+            <FormControl sx={{ width: "120px" }}>
+              {" "}
+              {/* Matches button width */}
+              <Select
+                labelId="language-select-label"
+                value={language}
+                onChange={handleLanguageChange}
+                sx={{
+                  height: "40px", // Set the height to match the button
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <MenuItem value="sr">
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <ReactCountryFlag
+                      countryCode="RS"
+                      svg
+                      style={{ width: "20px", marginRight: "8px" }}
+                    />
+                    SR
+                  </Box>
+                </MenuItem>
+                <MenuItem value="en">
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <ReactCountryFlag
+                      countryCode="US"
+                      svg
+                      style={{ width: "20px", marginRight: "8px" }}
+                    />
+                    EN
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>{" "}
+            <Button
+              variant="contained"
+              onClick={onClose}
+              sx={{ height: "40px" }}
+            >
               Close
             </Button>
           </Box>

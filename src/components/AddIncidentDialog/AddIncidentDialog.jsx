@@ -94,7 +94,7 @@ const AddIncidentDialog = ({
           display: "flex",
           flexDirection: "column",
           padding: 2,
-          height: "500px",
+          height: "550px",
         }}
       >
         {/* Title Section */}
@@ -240,6 +240,7 @@ const AddIncidentDialog = ({
               />
             </Box>
           </LocalizationProvider>
+          
           <Button
             variant="contained"
             component="label"

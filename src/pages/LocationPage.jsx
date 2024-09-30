@@ -13,6 +13,10 @@ import { getCategories } from "../services/category.service";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import { Snackbar, Alert } from "@mui/material";
+import enviroments from "../enviroments";
+import axios from "axios";
+
+const GOOGLE_API_KEY = enviroments().REACT_APP_GOOGLE_API_KEY;
 
 const LocationPage = ({ locationId }) => {
   const [incidents, setIncidents] = useState([]);
@@ -31,9 +35,12 @@ const LocationPage = ({ locationId }) => {
   const { locationName } = useParams();
   const location = useLocation();
   const locationData = location.state?.location;
+  const TRANSLATE_URL =
+    "https://translation.googleapis.com/language/translate/v2";
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("error");
 
   useEffect(() => {
     // Fetch incidents and categories
@@ -62,7 +69,36 @@ const LocationPage = ({ locationId }) => {
     fetchIncidents();
     fetchCategories();
   }, [locationName]);
+  const translateText = async (text, targetLanguage, cancelToken) => {
+    try {
+      const response = await axios.post(
+        TRANSLATE_URL,
+        {
+          q: text,
+          target: targetLanguage,
+          format: "text",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          params: {
+            key: GOOGLE_API_KEY,
+          },
+          cancelToken,
+        }
+      );
 
+      return response.data.data.translations[0].translatedText;
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log("Translation request canceled:", error.message);
+      } else {
+        console.error("Translation error:", error);
+      }
+      return text;
+    }
+  };
   const handleAddIncident = async () => {
     if (
       !newIncidentTitle ||
@@ -76,19 +112,30 @@ const LocationPage = ({ locationId }) => {
       setOpenSnackbar(true);
       return;
     }
-
+    // translate title and date
+    const cancelTokenSource = axios.CancelToken.source(); // Create a new cancel token
+    const translatedTitle = await translateText(
+      newIncidentTitle,
+      "sr",
+      cancelTokenSource.token
+    );
+    const translatedText = await translateText(
+      newIncidentText,
+      "sr",
+      cancelTokenSource.token
+    );
     const formData = new FormData();
     // const filesArray = Array.from(selectedImages);
     // Append incident data
-    formData.append("title", newIncidentTitle);
-    formData.append("text", newIncidentText);
+    formData.append("title", translatedTitle);
+    formData.append("text", translatedText);
     formData.append("dateTime", newIncidentDateTime.toISOString());
     formData.append("location.id", locationData.id);
     formData.append("location.latitude", locationData.latitude);
     formData.append("location.longitude", locationData.longitude);
     formData.append("location.name", locationData.name);
     //  formData.append("categories", selectedCategories);
-    console.log( newIncidentDateTime.toISOString());
+    console.log(newIncidentDateTime.toISOString());
     for (let i = 0; i < selectedCategories.length; i++) {
       formData.append(`categories`, selectedCategories[i]);
     }
@@ -98,8 +145,14 @@ const LocationPage = ({ locationId }) => {
 
     try {
       await createIncident(formData);
+      setSnackbarMessage("Incident added successfully!");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
     } catch (error) {
       console.log(error.response || error.message);
+      setSnackbarMessage("Failed to add incident");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
     setNewIncidentText("");
     setNewIncidentTitle("");
@@ -181,7 +234,10 @@ const LocationPage = ({ locationId }) => {
         autoHideDuration={5000}
         onClose={() => setOpenSnackbar(false)}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity="error">
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={snackbarSeverity}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

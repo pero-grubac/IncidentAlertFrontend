@@ -2,6 +2,7 @@ import React from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import MapComponent from "./components/MapComponent/MapComponent";
 import LeafletMapComponent from "./components/MapComponent/LeafletMapComponent";
+import NominatimSidebar from "./components/Sidebar/NominatimSidebar";
 import { SearchProvider } from "./context/SearchContext";
 import {
   BrowserRouter as Router,

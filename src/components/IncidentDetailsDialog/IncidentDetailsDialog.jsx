@@ -10,8 +10,11 @@ import {
   FormControl,
 } from "@mui/material";
 import axios from "axios";
-
+import enviroments from "../../enviroments";
 import ReactCountryFlag from "react-country-flag";
+
+const GOOGLE_API_KEY = enviroments().REACT_APP_GOOGLE_API_KEY;
+
 const ImagePreviewDialog = ({ open, onClose, imageUrl }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -27,59 +30,93 @@ const ImagePreviewDialog = ({ open, onClose, imageUrl }) => {
     </Dialog>
   );
 };
+
 const IncidentDetailsDialog = ({ open, onClose, incident }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [language, setLanguage] = useState("sr");
   const [translatedText, setTranslatedText] = useState(incident?.text);
   const [loading, setLoading] = useState(false);
+  const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
 
+  // Handle image click to preview
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
   };
 
+  // Handle closing image preview
   const handleCloseImagePreview = () => {
     setSelectedImage(null);
   };
-  const translateText = async (text, targetLang) => {
+
+  // Function to translate text using Google Cloud API
+  const translateText = async (text, targetLanguage, cancelToken) => {
     try {
       setLoading(true);
+  
       const response = await axios.post(
-        "https://libretranslate.com/translate",
+        `https://translation.googleapis.com/language/translate/v2`,
         {
-          q: text,
-          source: "auto",
-          target: targetLang,
-          format: "text",
+          q: text,              // The text to translate
+          target: targetLanguage, // The target language (e.g., 'en' for English)
+          format: "text",        // Specify format as text
+        },
+        {
+          headers: {
+            "Content-Type": "application/json", // Ensure JSON content type
+          },
+          params: {
+            key: GOOGLE_API_KEY, // The API key is passed as a query parameter
+          },
+          cancelToken, // Pass the cancel token to allow request cancellation
         }
       );
+  
       setLoading(false);
-      return response.data.translatedText;
+      return response.data.data.translations[0].translatedText;
     } catch (error) {
       setLoading(false);
-      console.error("Translation error:", error);
+      if (axios.isCancel(error)) {
+        console.log("Translation request canceled:", error.message);
+      } else {
+        console.error("Translation error:", error);
+      }
       return text;
     }
   };
+  
+
+  // Handle language change
   const handleLanguageChange = async (event) => {
     const newLang = event.target.value;
     setLanguage(newLang);
     const langCode = newLang === "sr" ? "sr" : "en";
-
-    const translated = await translateText(incident?.text, langCode);
+  
+    const cancelTokenSource = axios.CancelToken.source(); // Create a new cancel token
+    const translated = await translateText(incident?.text, langCode, cancelTokenSource.token);
     setTranslatedText(translated);
   };
+  
 
   useEffect(() => {
+    const cancelTokenSource = axios.CancelToken.source(); // Create a cancel token
+
     const initialTranslation = async () => {
       if (language !== "sr") {
-        const translated = await translateText(incident?.text, language);
+        const translated = await translateText(incident?.text, language, cancelTokenSource.token);
         setTranslatedText(translated);
       } else {
         setTranslatedText(incident?.text);
       }
     };
+
     initialTranslation();
+
+    // Cleanup function to cancel the API request when the component unmounts
+    return () => {
+      cancelTokenSource.cancel("Translation request canceled on component unmount.");
+    };
   }, [language, incident?.text]);
+
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -94,9 +131,9 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
           {/* Title Section */}
           <Box
             sx={{
-              flex: "0 0 auto", // Sprječava širenje ove sekcije
+              flex: "0 0 auto",
               padding: 2,
-              maxHeight: "100px", // Ograničava maksimalnu visinu naslova
+              maxHeight: "100px",
               borderBottom: "1px solid #ddd",
               overflowY: "auto",
               overflowWrap: "break-word",
@@ -119,7 +156,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               wordBreak: "break-word",
             }}
           >
-            {loading ? ( // Display loading state
+            {loading ? (
               <Typography variant="h6" component="div">
                 Translating...
               </Typography>
@@ -129,6 +166,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               </Typography>
             )}
           </Box>
+
           {/* Date Section */}
           <Box
             sx={{
@@ -140,6 +178,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               {new Date(incident?.dateTime).toLocaleString()}
             </Typography>
           </Box>
+
           {/* Location Section */}
           <Box
             sx={{
@@ -162,10 +201,11 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
             }}
           >
             <Typography variant="body2">
-              Categories:{" "}
-              {incident?.categories.map((cat) => cat.name).join(", ")}
+              Categories: {incident?.categories.map((cat) => cat.name).join(", ")}
             </Typography>
           </Box>
+
+          {/* Image Preview Section */}
           {incident?.images && incident.images.length > 0 && (
             <Box
               sx={{
@@ -189,31 +229,30 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
                       cursor: "pointer",
                       borderRadius: 4,
                     }}
-                    onClick={() => handleImageClick(imageUrl)} // Set the clicked image for full preview
+                    onClick={() => handleImageClick(imageUrl)} // Click handler for image
                   />
                 </Box>
               ))}
             </Box>
           )}
+
           {/* Close and Language Selector Section */}
           <Box
             sx={{
               padding: 2,
               display: "flex",
-              justifyContent: "space-between", // Space between close button and language selector
+              justifyContent: "space-between",
               alignItems: "center",
             }}
           >
             {/* Language Selector */}
             <FormControl sx={{ width: "120px" }}>
-              {" "}
-              {/* Matches button width */}
               <Select
                 labelId="language-select-label"
                 value={language}
                 onChange={handleLanguageChange}
                 sx={{
-                  height: "40px", // Set the height to match the button
+                  height: "40px",
                   display: "flex",
                   alignItems: "center",
                 }}
@@ -239,17 +278,15 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
                   </Box>
                 </MenuItem>
               </Select>
-            </FormControl>{" "}
-            <Button
-              variant="contained"
-              onClick={onClose}
-              sx={{ height: "40px" }}
-            >
+            </FormControl>
+
+            <Button variant="contained" onClick={onClose} sx={{ height: "40px" }}>
               Close
             </Button>
           </Box>
         </DialogContent>
       </Dialog>
+
       {selectedImage && (
         <ImagePreviewDialog
           open={!!selectedImage}

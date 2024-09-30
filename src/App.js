@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import MapComponent from "./components/MapComponent/MapComponent";
+import LeafletMapComponent from "./components/MapComponent/LeafletMapComponent";
 import { SearchProvider } from "./context/SearchContext";
 import {
   BrowserRouter as Router,
@@ -19,7 +20,7 @@ const App = () => {
           <Sidebar>
             <Routes>
               {/* Početna stranica sa MapComponent */}
-              <Route path="/" element={<MapComponent />} />
+              <Route path="/" element={<LeafletMapComponent />} />
               {/* Stranica za prikaz lokacije */}
               <Route
                 path="/location/:locationName"

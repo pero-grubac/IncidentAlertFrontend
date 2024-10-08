@@ -10,7 +10,7 @@ export default () => {
       return productionConfig;
     }
     default: {
-      return productionConfig;
+      return developmentConfig;
     }
   }
 };

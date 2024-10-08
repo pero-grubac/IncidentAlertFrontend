@@ -11,7 +11,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useIncidents } from "../../context/IncidentContext";
 import dayjs from "dayjs";
-
+import environment from "../../enviroments";
 const Sidebar = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
@@ -23,7 +23,9 @@ const Sidebar = ({ children }) => {
   const [endDate, setEndDate] = useState(null);
 
   const autocompleteRef = useRef(null);
-
+  const googleMapsApiKey = {
+    key: environment().REACT_APP_GOOGLE_API_KEY,
+  };
   useEffect(() => {
     setLocalSearchTerm(searchTerm);
   }, [searchTerm]);
@@ -61,7 +63,7 @@ const Sidebar = ({ children }) => {
 
   return (
     <LoadScript
-      googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAP_API_KEY}
+      googleMapsApiKey={googleMapsApiKey.key}
       libraries={["places"]}
     >
       <div className="container">

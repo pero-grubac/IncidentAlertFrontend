@@ -22,7 +22,12 @@ const defaultCenter = {
 
 // Leaflet marker icon
 const markerIcon = new L.Icon({
-  iconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png",
+  iconUrl: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+  iconSize: [32, 32],
+});
+
+const currentMarkerIcon = new L.Icon({
+  iconUrl: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
   iconSize: [32, 32],
 });
 
@@ -195,7 +200,7 @@ const LeafletMapComponent = () => {
         {markerPosition && (
           <Marker
             position={markerPosition}
-            icon={markerIcon}
+            icon={currentMarkerIcon}
             eventHandlers={{
               dblclick: () => handleMarkerDblClick(locationData),
             }}

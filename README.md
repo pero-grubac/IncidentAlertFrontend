@@ -10,6 +10,16 @@ IncidentAlert is a project designed for reporting and managing incidents with in
 - **Incident Reporting and Viewing**: Users can add new incidents and filter them based on the current day or a selected date range.
 - **Enhanced Navigation**: Currently, a single click on the map places a marker, while a double-click opens a page displaying incidents for that location. This will be updated to a more user-friendly interface with navigation buttons.
 
+## Setup Instructions
+
+Before using the application, it is necessary to configure the backend service URL and the Google services API key. This can be done by setting the following values in `src/environments/config.development.json` and `src/environments/config.production.json`:
+
+```json
+{
+  "baseServiceUrl": "",
+  "REACT_APP_GOOGLE_API_KEY": ""
+}
+
 ## TODO
 
 - **Code Clean-up**: Refactor the codebase for improved readability, maintainability, and adherence to best practices.

@@ -1,4 +1,4 @@
-# IncidentAlert
+# Incident Alert Frontend
 
 IncidentAlert is a project designed for reporting and managing incidents with integrated support for various tools such as Leaflet for OpenStreetMap, Google Translate, Google Places, and Geolocation. The application allows users to report incidents, view recent incidents, and filter incidents based on a specific date range.
 

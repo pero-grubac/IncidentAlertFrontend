@@ -37,7 +37,8 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
   const [translatedTitle, setTranslatedTitle] = useState(incident?.title);
   const [translatedText, setTranslatedText] = useState(incident?.text);
   const [loading, setLoading] = useState(false);
-  const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
+  const TRANSLATE_URL =
+    "https://translation.googleapis.com/language/translate/v2";
 
   // Handle image click to preview
   const handleImageClick = (imageUrl) => {
@@ -92,8 +93,16 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
     const langCode = newLang === "sr" ? "sr" : "en";
 
     const cancelTokenSource = axios.CancelToken.source(); // Create a new cancel token
-    const translatedTitle = await translateText(incident?.title, langCode, cancelTokenSource.token);
-    const translatedText = await translateText(incident?.text, langCode, cancelTokenSource.token);
+    const translatedTitle = await translateText(
+      incident?.title,
+      langCode,
+      cancelTokenSource.token
+    );
+    const translatedText = await translateText(
+      incident?.text,
+      langCode,
+      cancelTokenSource.token
+    );
     setTranslatedTitle(translatedTitle);
     setTranslatedText(translatedText);
   };
@@ -103,8 +112,16 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
 
     const initialTranslation = async () => {
       if (language !== "sr") {
-        const translatedTitle = await translateText(incident?.title, language, cancelTokenSource.token);
-        const translatedText = await translateText(incident?.text, language, cancelTokenSource.token);
+        const translatedTitle = await translateText(
+          incident?.title,
+          language,
+          cancelTokenSource.token
+        );
+        const translatedText = await translateText(
+          incident?.text,
+          language,
+          cancelTokenSource.token
+        );
         setTranslatedTitle(translatedTitle);
         setTranslatedText(translatedText);
       } else {
@@ -117,13 +134,25 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
 
     // Cleanup function to cancel the API request when the component unmounts
     return () => {
-      cancelTokenSource.cancel("Translation request canceled on component unmount.");
+      cancelTokenSource.cancel(
+        "Translation request canceled on component unmount."
+      );
     };
   }, [language, incident?.title, incident?.text]);
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            minHeight: "90vh", // Podesite minimalnu visinu dijaloga, ovde je 90% visine ekrana
+          },
+        }}
+      >
         <DialogContent
           sx={{
             display: "flex",
@@ -152,12 +181,13 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
           {/* Text Section */}
           <Box
             sx={{
-              flex: "1",
+              flex: "3",
               padding: 2,
               borderBottom: "1px solid #ddd",
               overflowY: "auto",
               overflowWrap: "break-word",
               wordBreak: "break-word",
+              minHeight: "10vh",
             }}
           >
             {loading ? (
@@ -205,7 +235,8 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
             }}
           >
             <Typography variant="body2">
-              Categories: {incident?.categories.map((cat) => cat.name).join(", ")}
+              Categories:{" "}
+              {incident?.categories.map((cat) => cat.name).join(", ")}
             </Typography>
           </Box>
 
@@ -218,6 +249,7 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
                 display: "flex",
                 flexWrap: "wrap",
                 gap: 2,
+                maxHeight: "20vh",
                 justifyContent: "center",
               }}
             >
@@ -284,7 +316,11 @@ const IncidentDetailsDialog = ({ open, onClose, incident }) => {
               </Select>
             </FormControl>
 
-            <Button variant="contained" onClick={onClose} sx={{ height: "40px" }}>
+            <Button
+              variant="contained"
+              onClick={onClose}
+              sx={{ height: "40px" }}
+            >
               Close
             </Button>
           </Box>

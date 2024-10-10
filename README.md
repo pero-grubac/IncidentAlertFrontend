@@ -19,6 +19,7 @@ Before using the application, it is necessary to configure the backend service U
   "baseServiceUrl": "",
   "REACT_APP_GOOGLE_API_KEY": ""
 }
+```
 
 ## TODO
 

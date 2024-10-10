@@ -1,4 +1,4 @@
 {
-  "baseServiceUrl": "https://localhost:5001",
-  "REACT_APP_GOOGLE_API_KEY": "AIzaSyChYJcVDh5DzZSs7IURRSR3jPx66ynAwXI"
+  "baseServiceUrl": "",
+  "REACT_APP_GOOGLE_API_KEY": ""
 }

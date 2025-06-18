@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h1>📍 Incident Alert Frontend</h1>
+    <h1 align="center">📍 Incident Alert Frontend</h1>
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/React-Frontend-blue?logo=react" />
+    <img src="https://img.shields.io/badge/Redux-State_Management-purple?logo=redux&logoColor=white" />
+    <img src="https://img.shields.io/badge/Docker-Containerized-2496ed?logo=docker&logoColor=white" />
+    <img src="https://img.shields.io/badge/Google_Maps_API-Enabled-yellow?logo=googlemaps&logoColor=white" />
+  </p>
     <p>
         IncidentAlert is a project designed for reporting and managing incidents with integrated support for various tools such as Leaflet for OpenStreetMap, Google Translate, Google Places, and Geolocation. The application allows users to report incidents, view recent incidents, and filter incidents based on a specific date range.
     </p>

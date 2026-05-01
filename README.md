@@ -1,46 +1,78 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <h1 align="center">📍 Incident Alert Frontend</h1>
+<div align="center">
 
-  <p align="center">
-    <img src="https://img.shields.io/badge/React-Frontend-blue?logo=react" />
-    <img src="https://img.shields.io/badge/Redux-State_Management-purple?logo=redux&logoColor=white" />
-    <img src="https://img.shields.io/badge/Docker-Containerized-2496ed?logo=docker&logoColor=white" />
-    <img src="https://img.shields.io/badge/Google_Maps_API-Enabled-yellow?logo=googlemaps&logoColor=white" />
-  </p>
-    <p>
-        IncidentAlert is a project designed for reporting and managing incidents with integrated support for various tools such as Leaflet for OpenStreetMap, Google Translate, Google Places, and Geolocation. The application allows users to report incidents, view recent incidents, and filter incidents based on a specific date range.
-    </p>
+# 📍 Incident Alert Frontend
 
-  <h2>✨ Features</h2>
-    <ul>
-        <li>🗺️ <strong>Interactive Map with Leaflet and OpenStreetMap:</strong> Users can easily report and view incidents on a dynamic map interface.</li>
-        <li>🌐 <strong>Google Translate Support:</strong> The application currently translates incident descriptions; however, translation before saving to the database will be addressed in future updates.</li>
-        <li>📍 <strong>Location Search with Google Places and Geolocation:</strong> Users can search for specific places and get their location automatically.</li>
-        <li>📋 <strong>Incident Reporting and Viewing:</strong> Users can add new incidents and filter them based on the current day or a selected date range.</li>
-        <li>🧭 <strong>Enhanced Navigation:</strong> Currently, a single click on the map places a marker, while a double-click opens a page displaying incidents for that location. This will be updated to a more user-friendly interface with navigation buttons.</li>
-    </ul>
+![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=black)
+![Redux](https://img.shields.io/badge/Redux-State_Management-764ABC?logo=redux&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-OpenStreetMap-199900?logo=leaflet&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?logo=nginx&logoColor=white)
 
-   <h2>⚙️ Setup Instructions</h2>
-    <p>
-        Before using the application, it is necessary to configure the backend service URL and the Google services API key. This can be done by setting the following values in <code>src/environments/config.development.json</code> and <code>src/environments/config.production.json</code>:
-    </p>
-    <pre>
+<picture>
+    <source srcset="readme_assets/demo.gif" type="image/gif">
+    <img src="readme_assets/demo.png" alt="Incident Alert Frontend demo" width="700">
+</picture>
+
+</div>
+
+---
+
+## 📌 Project Overview
+
+**Incident Alert Frontend** is the user-facing React application for reporting and viewing incidents on an interactive map. Users can submit new incidents, browse existing ones, and filter by date — all powered by Leaflet and OpenStreetMap.
+
+---
+
+## ✨ Features
+
+- 🗺️ **Interactive Map** — Report and view incidents on a dynamic Leaflet/OpenStreetMap interface
+- 📋 **Incident Reporting** — Submit new incidents with title, description, category, and location
+- 📅 **Date Filtering** — Filter incidents by current day or custom date range
+- 📍 **Geolocation** — Automatic location detection for faster incident reporting
+- 🌐 **Google Translate** — Incident description translation support
+- 🔍 **Location Search** — Search for specific places via Google Places API
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Usage |
+|------------|-------|
+| React | Frontend framework |
+| Redux | State management |
+| Leaflet / OpenStreetMap | Interactive map (no API key required) |
+| Axios | HTTP client |
+| Docker + Nginx | Containerized deployment |
+
+---
+
+## 🚀 Setup & Run
+
+### Prerequisites
+- Docker and Docker Compose
+- Backend services running (see [IncidentAlert](https://github.com/pero-grubac/IncidentAlert))
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/pero-grubac/IncidentAlertFrontend.git
+cd IncidentAlertFrontend
+```
+
+### 2. Configure environment
+
+Set backend URL in `src/environments/config.production.json`:
+```json
 {
-  "baseServiceUrl": "",
+  "baseServiceUrl": "http://localhost:5000",
   "REACT_APP_GOOGLE_API_KEY": ""
 }
-    </pre>
+```
 
-  <h2>📋 TODO</h2>
-    <ul>
-        <li>🧹 <strong>Code Clean-up:</strong> Refactor the codebase for improved readability, maintainability, and adherence to best practices.</li>
-        <li>📦 <strong>Modularization:</strong> Restructure the project to separate functional logic and presentation within components.</li>
-        <li>📱 <strong>Responsive Design:</strong> Implement a fully responsive UI to enhance usability on various screen sizes, including mobile devices.</li>
-        <li>💡 <strong>Autocomplete Improvement:</strong> Fix the autocomplete feature for the Google Places API to ensure accurate and reliable location searches.</li>
-        <li>🌐 <strong>Translation Adjustments:</strong> Modify the Google Translate integration so that incidents are not translated before being saved to the database, preserving the original language in records.</li>
-        <li>🖼️ <strong>Map Interaction Update:</strong> Replace the double-click navigation with a button in the sidebar. After clicking on a location on the map, the user should be able to navigate to the incident details page for that location via a sidebar button.</li>
-    </ul>
-</body>
-</html>
+> Google API key is optional — map works without it. Only Places autocomplete and Translate require it.
+
+### 3. Run with Docker
+```bash
+docker compose up -d --build
+```
+
+App will be available at `http://localhost:3000`.

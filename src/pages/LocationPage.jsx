@@ -1,248 +1,297 @@
-import React, { useState, useEffect } from "react";
-import FilterSection from "../components/FilterSection/FilterSection";
-import IncidentCard from "../components/IncidentCard/IncidentCard";
-import IncidentDetailsDialog from "../components/IncidentDetailsDialog/IncidentDetailsDialog";
-import AddIncidentDialog from "../components/AddIncidentDialog/AddIncidentDialog";
-import { Box, Grid, CircularProgress } from "@mui/material";
-import {
-  getIncidentsByLocationName,
-  createIncident,
-} from "../services/incident.service";
-import { useParams } from "react-router-dom";
-import { getCategories } from "../services/category.service";
-import { useLocation } from "react-router-dom";
-import dayjs from "dayjs";
-import { Snackbar, Alert } from "@mui/material";
-import enviroments from "../enviroments";
-import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import { Link as RouterLink, useLocation, useParams } from "react-router-dom";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { Alert, AppBar, Box, Button, Card, Container, Grid2 as Grid, Skeleton, Stack, Toolbar, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import AddLocationAltRoundedIcon from "@mui/icons-material/AddLocationAltRounded";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
+import Brand from "../components/Brand";
+import CategoryChip from "../components/CategoryChip";
+import EmptyState from "../components/EmptyState";
+import IncidentCard from "../components/IncidentCard";
+import IncidentDetailsDialog from "../components/IncidentDetailsDialog";
+import ReportIncidentDialog from "../components/ReportIncidentDialog";
+import SettingsMenu from "../components/SettingsMenu";
+import { incidentIcon, selectionIcon } from "../components/map/markers";
+import { TILE_URL } from "../components/map/tiles";
+import { getIncidentsByLocation } from "../api/incidents";
+import { errorMessage } from "../api/client";
+import { useCategories } from "../hooks/useCategories";
+import { categoryNames, categoryStyle, incidentColor } from "../lib/categories";
+import { fromNow, isWithin } from "../lib/dates";
+import { useT } from "../i18n";
 
-const GOOGLE_API_KEY = enviroments().REACT_APP_GOOGLE_API_KEY;
-
-const LocationPage = ({ locationId }) => {
-  const [incidents, setIncidents] = useState([]);
-  const [selectedIncident, setSelectedIncident] = useState(null);
-  const [dateFilterStart, setDateFilterStart] = useState(null);
-  const [dateFilterEnd, setDateFilterEnd] = useState(null);
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAddIncidentOpen, setIsAddIncidentOpen] = useState(false);
-  const [newIncidentText, setNewIncidentText] = useState("");
-  const [newIncidentTitle, setNewIncidentTitle] = useState("");
-  const [newIncidentDateTime, setNewIncidentDateTime] = useState(dayjs());
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const { locationName } = useParams();
-  const location = useLocation();
-  const locationData = location.state?.location;
-  const TRANSLATE_URL =
-    "https://translation.googleapis.com/language/translate/v2";
-
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("error");
-
-  useEffect(() => {
-    // Fetch incidents and categories
-    const fetchIncidents = async () => {
-      try {
-        const response = await getIncidentsByLocationName(locationName);
-        const data = response.data;
-        setIncidents(data);
-      } catch (error) {
-        console.error("Failed to fetch incidents", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const fetchCategories = async () => {
-      try {
-        const response = await getCategories();
-        const data = response.data;
-        setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-      }
-    };
-
-    fetchIncidents();
-    fetchCategories();
-  }, [locationName]);
-  const translateText = async (text, targetLanguage, cancelToken) => {
-    try {
-      const response = await axios.post(
-        TRANSLATE_URL,
-        {
-          q: text,
-          target: targetLanguage,
-          format: "text",
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          params: {
-            key: GOOGLE_API_KEY,
-          },
-          cancelToken,
-        }
-      );
-
-      return response.data.data.translations[0].translatedText;
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        console.log("Translation request canceled:", error.message);
-      } else {
-        console.error("Translation error:", error);
-      }
-      return text;
-    }
-  };
-  const handleAddIncident = async () => {
-    if (
-      !newIncidentTitle ||
-      !newIncidentText ||
-      !newIncidentDateTime ||
-      selectedCategories.length === 0
-    ) {
-      setSnackbarMessage(
-        "Please fill in all fields before adding the incident."
-      );
-      setOpenSnackbar(true);
-      return;
-    }
-    // translate title and date
-    const cancelTokenSource = axios.CancelToken.source(); // Create a new cancel token
-    const translatedTitle = await translateText(
-      newIncidentTitle,
-      "sr",
-      cancelTokenSource.token
-    );
-    const translatedText = await translateText(
-      newIncidentText,
-      "sr",
-      cancelTokenSource.token
-    );
-    const formData = new FormData();
-    // const filesArray = Array.from(selectedImages);
-    // Append incident data
-    formData.append("title", translatedTitle);
-    formData.append("text", translatedText);
-    formData.append("dateTime", newIncidentDateTime.toISOString());
-    formData.append("location.id", locationData.id);
-    formData.append("location.latitude", locationData.latitude);
-    formData.append("location.longitude", locationData.longitude);
-    formData.append("location.name", locationData.name);
-    //  formData.append("categories", selectedCategories);
-    console.log(newIncidentDateTime.toISOString());
-    for (let i = 0; i < selectedCategories.length; i++) {
-      formData.append(`categories`, selectedCategories[i]);
-    }
-    for (let i = 0; i < selectedImages.length; i++) {
-      formData.append(`images`, selectedImages[i]);
-    }
-
-    try {
-      await createIncident(formData);
-      setSnackbarMessage("Incident added successfully!");
-      setSnackbarSeverity("success");
-      setOpenSnackbar(true);
-    } catch (error) {
-      console.log(error.response || error.message);
-      setSnackbarMessage("Failed to add incident");
-      setSnackbarSeverity("error");
-      setOpenSnackbar(true);
-    }
-    setNewIncidentText("");
-    setNewIncidentTitle("");
-    // setNewIncidentDateTime("");
-    setSelectedCategories([]);
-    setSelectedImages([]);
-
-    setIsAddIncidentOpen(false);
-  };
-  const handleIncidentClick = (incident) => {
-    setSelectedIncident(incident);
-  };
-
+function PlaceMap({ place, color }) {
   return (
-    <Box>
-      <h1>Location: {locationName}</h1>
-      <FilterSection
-        dateFilterStart={dateFilterStart}
-        setDateFilterStart={setDateFilterStart}
-        dateFilterEnd={dateFilterEnd}
-        setDateFilterEnd={setDateFilterEnd}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
-        categories={categories}
-        onAddClick={() => setIsAddIncidentOpen(true)}
-      />
-
-      <Grid container spacing={2}>
-        {isLoading ? (
-          <CircularProgress />
-        ) : (
-          incidents
-            .filter((incident) => {
-              const matchesDate =
-                (!dateFilterStart ||
-                  new Date(incident.dateTime) >= new Date(dateFilterStart)) &&
-                (!dateFilterEnd ||
-                  new Date(incident.dateTime) <= new Date(dateFilterEnd));
-              const matchesCategory =
-                !categoryFilter ||
-                incident.categories.some((cat) => cat.name === categoryFilter);
-              return matchesDate && matchesCategory;
-            })
-            .map((incident) => (
-              <Grid item xs={12} sm={6} md={4} key={incident.id}>
-                <IncidentCard
-                  incident={incident}
-                  onClick={() => handleIncidentClick(incident)}
-                />
-              </Grid>
-            ))
-        )}
-      </Grid>
-
-      <IncidentDetailsDialog
-        open={Boolean(selectedIncident)}
-        onClose={() => setSelectedIncident(null)}
-        incident={selectedIncident}
-      />
-
-      <AddIncidentDialog
-        open={isAddIncidentOpen}
-        onClose={() => setIsAddIncidentOpen(false)}
-        newIncidentText={newIncidentText}
-        setNewIncidentText={setNewIncidentText}
-        newIncidentTitle={newIncidentTitle}
-        setNewIncidentTitle={setNewIncidentTitle}
-        newIncidentDateTime={newIncidentDateTime}
-        setNewIncidentDateTime={setNewIncidentDateTime}
-        selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
-        categories={categories}
-        selectedImages={selectedImages}
-        setSelectedImages={setSelectedImages}
-        onAddIncident={handleAddIncident}
-      />
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={5000}
-        onClose={() => setOpenSnackbar(false)}
+    <Box sx={{ height: "100%", minHeight: { xs: 200, md: 280 }, borderRadius: 4, overflow: "hidden", border: 1, borderColor: "divider" }}>
+      <MapContainer
+        key={`${place.latitude},${place.longitude}`}
+        center={[place.latitude, place.longitude]}
+        zoom={15}
+        style={{ height: "100%", width: "100%", minHeight: "inherit" }}
+        zoomControl={false}
+        dragging={false}
+        scrollWheelZoom={false}
+        doubleClickZoom={false}
+        attributionControl={false}
+        keyboard={false}
       >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity={snackbarSeverity}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        <TileLayer url={TILE_URL} />
+        <Marker position={[place.latitude, place.longitude]} icon={color ? incidentIcon(color) : selectionIcon} interactive={false} />
+      </MapContainer>
     </Box>
   );
-};
+}
 
-export default LocationPage;
+/** How many reports each category has here, as a row of colored counts. */
+function CategoryBreakdown({ incidents }) {
+  const counts = useMemo(() => {
+    const map = new Map();
+    for (const name of incidents.flatMap(categoryNames)) map.set(name, (map.get(name) ?? 0) + 1);
+    return [...map.entries()].sort((a, b) => b[1] - a[1]);
+  }, [incidents]);
+
+  if (!counts.length) return null;
+  const total = counts.reduce((sum, [, n]) => sum + n, 0);
+
+  return (
+    <Stack spacing={1}>
+      <Box sx={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }} aria-hidden>
+        {counts.map(([name, n]) => (
+          <Box key={name} sx={{ width: `${(n / total) * 100}%`, bgcolor: categoryStyle(name).color }} />
+        ))}
+      </Box>
+      <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap alignItems="center">
+        {counts.map(([name, n]) => (
+          <Stack key={name} direction="row" spacing={0.5} alignItems="center">
+            <CategoryChip name={name} />
+            <Typography variant="body2" fontWeight={700}>
+              {n}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+    </Stack>
+  );
+}
+
+export default function LocationPage() {
+  const t = useT();
+  const { locationName } = useParams();
+  const { state } = useLocation();
+  const categories = useCategories();
+
+  const [incidents, setIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [from, setFrom] = useState(null);
+  const [to, setTo] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [reporting, setReporting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    getIncidentsByLocation(locationName)
+      .then((data) => !cancelled && setIncidents(data))
+      .catch((e) => !cancelled && setError(errorMessage(e, t("errors.place"))))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+    // The message only matters for a failure; reloading on a language switch is not needed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationName]);
+
+  // Coordinates come from the map when we navigated here, otherwise from a stored incident.
+  const place = useMemo(() => {
+    const known = state?.location ?? incidents[0]?.location;
+    return known ? { ...known, name: locationName } : null;
+  }, [state, incidents, locationName]);
+
+  const present = useMemo(() => [...new Set(incidents.flatMap(categoryNames))].sort(), [incidents]);
+  const latest = incidents[0];
+
+  const filtered = useMemo(
+    () => incidents.filter((i) => (!category || categoryNames(i).includes(category)) && isWithin(i.dateTime, from, to)),
+    [incidents, category, from, to],
+  );
+
+  const filtering = Boolean(category || from || to);
+
+  return (
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <AppBar
+        position="sticky"
+        color="inherit"
+        elevation={0}
+        sx={(th) => ({ borderBottom: 1, borderColor: "divider", bgcolor: alpha(th.palette.background.paper, 0.85), backdropFilter: "blur(10px)" })}
+      >
+        <Toolbar sx={{ gap: 1 }}>
+          <Button component={RouterLink} to="/" startIcon={<ArrowBackRoundedIcon />} color="inherit">
+            {t("place.back")}
+          </Button>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: { xs: "none", sm: "block" } }}>
+            <Brand subtitleKey="brand.placeTagline" />
+          </Box>
+          <SettingsMenu />
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }} className="ia-page" key={locationName}>
+        {/* Hero: what this place is, what happens here, and the way to report something. */}
+        <Card
+          sx={(th) => ({
+            p: { xs: 2.5, md: 3.5 },
+            mb: 4,
+            position: "relative",
+            overflow: "hidden",
+            background: `radial-gradient(900px 300px at 0% 0%, ${alpha(th.palette.secondary.main, 0.1)}, transparent 60%), ${th.palette.background.paper}`,
+          })}
+        >
+          <Grid container spacing={{ xs: 2.5, md: 4 }} alignItems="stretch">
+            <Grid size={{ xs: 12, md: place ? 7 : 12 }}>
+              <Stack spacing={2} sx={{ height: "100%" }}>
+                <Box>
+                  <Typography variant="overline" color="secondary">
+                    {t("place.overline")}
+                  </Typography>
+                  <Typography variant="h3" component="h2" sx={{ wordBreak: "break-word", fontSize: { xs: "2rem", md: "2.75rem" } }}>
+                    {locationName}
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={2.5} flexWrap="wrap" useFlexGap color="text.secondary">
+                  {place && (
+                    <Stack direction="row" spacing={0.75} alignItems="center">
+                      <PlaceOutlinedIcon fontSize="small" />
+                      <Typography variant="body2">
+                        {Number(place.latitude).toFixed(5)}, {Number(place.longitude).toFixed(5)}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {latest && (
+                    <Stack direction="row" spacing={0.75} alignItems="center">
+                      <ScheduleRoundedIcon fontSize="small" />
+                      <Typography variant="body2">{t("place.latest", { when: fromNow(latest.dateTime) })}</Typography>
+                    </Stack>
+                  )}
+                </Stack>
+
+                {loading ? (
+                  <Skeleton width={220} height={40} />
+                ) : (
+                  <Box>
+                    <Typography variant="h5" component="p" sx={{ mb: 1.25 }}>
+                      {t("place.approved", { n: incidents.length })}
+                    </Typography>
+                    <CategoryBreakdown incidents={incidents} />
+                  </Box>
+                )}
+
+                <Box sx={{ flexGrow: 1 }} />
+                <Box>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    startIcon={<AddLocationAltRoundedIcon />}
+                    disabled={!place}
+                    onClick={() => setReporting(true)}
+                  >
+                    {t("place.report")}
+                  </Button>
+                </Box>
+              </Stack>
+            </Grid>
+            {place && (
+              <Grid size={{ xs: 12, md: 5 }}>
+                <PlaceMap place={place} color={incidents[0] ? incidentColor(incidents[0]) : null} />
+              </Grid>
+            )}
+          </Grid>
+        </Card>
+
+        {incidents.length > 0 && (
+          <Card sx={{ p: 2, mb: 3 }}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "center" }} justifyContent="space-between">
+              <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap alignItems="center">
+                <Typography variant="body2" fontWeight={600} sx={{ mr: 0.5 }}>
+                  {t("place.category")}
+                </Typography>
+                {present.map((name) => (
+                  <CategoryChip key={name} name={name} selected={category === name} onClick={() => setCategory(category === name ? null : name)} />
+                ))}
+              </Stack>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <DatePicker label={t("common.from")} value={from} onChange={setFrom} slotProps={{ textField: { size: "small", sx: { width: 160 } } }} />
+                <DatePicker
+                  label={t("common.to")}
+                  value={to}
+                  onChange={setTo}
+                  minDate={from ?? undefined}
+                  slotProps={{ textField: { size: "small", sx: { width: 160 } } }}
+                />
+                {filtering && (
+                  <Button
+                    onClick={() => {
+                      setCategory(null);
+                      setFrom(null);
+                      setTo(null);
+                    }}
+                  >
+                    {t("common.clear")}
+                  </Button>
+                )}
+              </Stack>
+            </Stack>
+          </Card>
+        )}
+
+        {error && <Alert severity="error">{error}</Alert>}
+
+        {loading ? (
+          <Grid container spacing={2.5}>
+            {[0, 1, 2].map((i) => (
+              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Skeleton variant="rounded" height={280} />
+              </Grid>
+            ))}
+          </Grid>
+        ) : filtered.length === 0 && !error ? (
+          <Card>
+            <EmptyState
+              title={filtering ? t("place.noMatchTitle") : t("place.emptyTitle")}
+              description={filtering ? t("place.noMatchText") : t("place.emptyText")}
+              action={
+                !filtering &&
+                place && (
+                  <Button variant="contained" color="secondary" onClick={() => setReporting(true)}>
+                    {t("place.reportFirst")}
+                  </Button>
+                )
+              }
+            />
+          </Card>
+        ) : (
+          <Grid container spacing={2.5}>
+            {filtered.map((incident, i) => (
+              <Grid key={incident.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <IncidentCard incident={incident} index={i} onClick={setSelected} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+
+      <IncidentDetailsDialog incident={selected} open={Boolean(selected)} onClose={() => setSelected(null)} />
+      <ReportIncidentDialog open={reporting} place={place} categories={categories} onClose={() => setReporting(false)} />
+    </Box>
+  );
+}

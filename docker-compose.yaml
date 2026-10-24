@@ -2,7 +2,10 @@ services:
   incidentalert.frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000}
+        VITE_GOOGLE_API_KEY: ${VITE_GOOGLE_API_KEY:-}
+    image: incidentalert-frontend
     container_name: incidentalert.frontend
     ports:
       - "3000:80"

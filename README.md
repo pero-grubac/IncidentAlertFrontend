@@ -13,7 +13,7 @@
 
 **See what is happening around you on a map, and report it — with photos — in a few clicks.**
 
-<img src="readme_assets/demo.gif" alt="Incident Alert public app demo: filtering the map, opening a place and an incident, reporting a road closure with a photo, then switching to the dark theme and Serbian" width="900">
+<img src="readme_assets/demo.gif" alt="Incident Alert public app demo: opening an incident from the list, reporting a road closure by clicking the map, then switching to the dark theme and Serbian" width="900">
 
 </div>
 
